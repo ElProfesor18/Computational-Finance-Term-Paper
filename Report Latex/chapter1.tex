@@ -1,0 +1,186 @@
+\chapter{Introduction}
+
+Derived securities, or contingent claims, are of great practical significance when it comes to pricing and hedging them. Option is an example of a derivative. Call options allow the owner the right, but not the obligation, to purchase an underlying asset, such as a stock, for a specified price, known as the exercise price or strike price, on or before an expiration date.
+
+Using the time horizon and underlying price as inputs, Black and Scholes show that these option prices satisfy a second order partial differential equation. As a result, it is now known as the Black-Scholes equation but it can only be solved exactly with constant coefficients or space-independent coefficients. Euler transformations are commonly used to solve the Black-Scholes equation. This may lead to computational errors, however, as the left-hand side of the domain is truncated to artificially remove the degeneracy. The uniform mesh will also cause the grid points to concentrate around x = 0 unnecessarily on the transformed interval. In addition, when a problem is space-dependent, this transformation is not possible, and hence the Original Black-Scholes equation must be solved.
+
+Here, by changing the grid spacing, the author implemented a piece-wise uniform mesh which is constructed so that the central difference is applied everywhere. It is easy to implement explicit schemes for time discretization, but they have instability issues. It is well-known that some well-known second-order implicit schemes, such as Crank-Nicolson, are susceptible to spurious oscillations unless the time step size is no greater than two times the time step size for an explicit method. Due to recent innovations in efficient matrix exponential computation methods, exponential time integration is likely to be a popular choice for solving large semi-discrete systems arising in various numerical computations.
+
+On a piece-wise uniform mesh with respect to the spatial dimension, we apply a time integration scheme combining exponential and central differences. The scheme is found to be unconditionally stable. This conclusion is supported by numerical results.
+
+
+\section{Method description}
+We consider the following generalized Black-Scholes equation
+
+% 2.1 2.2 2.3
+$$\frac{\partial v}{\partial t}-\frac{1}{2} \sigma^{2}(x, t) x^{2} \frac{\partial^{2} v}{\partial x^{2}}-r(t) x \frac{\partial v}{\partial x}+r(t) v=0, \quad(x, t) \in \mathbb{R}^{+} \times(0, T)$$
+
+$$v(x, 0)=\max (x-K, 0), \quad x \in \mathbb{R}^{+}$$
+
+$$v(0, t)=0, \quad t \in[0, T]$$
+
+Here v(x, t) is the European call option price at asset price x and at time to maturity t, K is the exercise price, T is the maturity, r(t) is the risk-free interest rate, and $\sigma(x, t)$ represents the volatility function of underlying asset. Here, we assume that $\sigma^{2} \geq \alpha \gneq 0$ and $\beta_{*} \geq r \geq \beta \gneq 0$. When $\sigma$ and r are constant functions, it becomes the classical Black-Scholes model.
+
+The finite difference scheme may fail to converge as a result of the initial conditions not being smooth.
+
+\subsection{Smoothing the initial condition}
+Define $\pi_{\epsilon}(y)$ as
+
+% 2.4
+$$
+\pi_{\varepsilon}(y)= \begin{cases}y, & y \geq \varepsilon \\ c_{0}+c_{1} y+\cdots+c_{9} y^{9}, & -\varepsilon<y<\varepsilon \\
+0, & y \leq-\varepsilon\end{cases}
+$$
+
+
+where $0 \leq \epsilon$ \textless\textless 1 is a transition parameter and $\pi_{\epsilon}(y)$ is a function which smooths out the original max(y, 0) around y = 0. This requires that $\pi_{\epsilon}(y)$ satisfies
+
+% 2.5
+$$
+\begin{aligned}
+\pi_{\varepsilon}(-\varepsilon) &=\pi_{\varepsilon}^{\prime}(-\varepsilon)=\pi_{\varepsilon}^{\prime \prime}(-\varepsilon)=\pi_{\varepsilon}^{\prime \prime \prime}(-\varepsilon)=\pi_{\varepsilon}^{(4)}(-\varepsilon)=0 
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\pi_{\varepsilon}(\varepsilon) &=\varepsilon, \pi_{\varepsilon}^{\prime}(\varepsilon)=1, \pi_{\varepsilon}^{\prime \prime}(\varepsilon)=\pi_{\varepsilon}^{\prime \prime \prime}(\varepsilon)=\pi_{\varepsilon}^{(4)}(\varepsilon)=0
+\end{aligned}
+$$
+
+Using these ten conditions we can easily find that
+
+% 2.6
+$$
+\begin{aligned}
+\begin{array}{ll}c_{0}=\frac{35}{256} \varepsilon, & c_{1}=\frac{1}{2}, \quad c_{2}=\frac{35}{64 \varepsilon}, \quad c_{4}=-\frac{35}{128 \varepsilon^{3}}, \\ c_{6}=\frac{7}{64 \varepsilon^{5}}, & c_{8}=-\frac{5}{256 \varepsilon^{7}}, \quad c_{3}=c_{5}=c_{7}=c_{9}=0 .\end{array}
+\end{aligned}
+$$
+
+In order to apply the numerical method we need to truncate the infinite domain. Wilmott et al.’s estimated that the upper bound of the asset price is typically three or four times the strike price.
+
+\subsection{The scheme}
+When a uniform mesh is used to compute a solution, central difference schemes may create nonphysical oscillations. Piece-wise uniform meshes are used to overcome these oscillations.
+
+% 3.1
+$$
+x_{i}= \begin{cases}h & i=1 \\ h\left[1+\frac{\alpha}{\beta^{*}}(i-1)\right] & i=2, \ldots, \frac{N}{4}-1 \\ K & i=\frac{N}{4} \\ K+\varepsilon & i=\frac{N}{4}+1 \\ K+\varepsilon+\frac{S_{\max }-K-\varepsilon}{3 N / 4-1}(I-N / 4-1) & i=\frac{N}{4}+2, \ldots, N\end{cases}
+$$
+
+where
+
+% 3.2
+$$
+h=\frac{K-\varepsilon}{1+\left(\alpha / \beta^{*}\right)(N / 4-2)}
+$$
+
+For treating the non smoothness of the payoff function, we have used a refined mesh near x = K. On the piece-wise uniform mesh above, we discretize the generalized Black-Scholes operator by using a central difference scheme:
+
+% 3.4
+$$
+L^{N} U_{i}(t) = \frac{d U_{i}(t)}{d t}-\frac{\sigma_{i}^{2}(t) x_{i}^{2}}{h_{i}+h_{i+1}}\left(\frac{U_{i+1}(t)-U_{i}(t)}{h_{i+1}}-\frac{U_{i}(t)-U_{i-1}(t)}{h_{i}}\right) \\
+$$
+$$
+-r(t) x_{i} \frac{U_{i+1}(t)-U_{i-1}(t)}{h_{i}+h_{i+1}}+r(t) U_{i}(t)
+$$
+
+for i = 1, . . . , N - 1. This discretization leads to an initial value problem of the form
+
+% 3.5
+$$
+\frac{d \mathbf{U}}{d t}=\mathbf{A}(t) \mathbf{U}(t)+\mathbf{f}(t), \quad \mathbf{U}(0)=\pi_{\varepsilon}(\mathbf{x}-\mathbf{K})
+$$
+
+where $U(t) = (U_1(t), . . . , U_{N-1}(t))^{T}$ , the matrix A(t) of order (N - 1) is given by
+
+% 3.6
+$$
+\mathbf{A}(t)=\left[\begin{array}{cccccc}
+b_{1} & c_{1} & 0 && \cdots & 0 \\
+a_{2} & b_{2} & c_{2} & \cdots & & \\
+\vdots & a_{3} & b_{3} & c_{3} & \cdots & \\
+& \vdots & \vdots & \vdots & \vdots & \\
+& \cdots & a_{N-2} & b_{N-2} & c_{N-2} \\
+0 & \cdots & & & a_{N-1} & b_{N-1}
+\end{array}\right]
+$$
+
+where
+
+% 3.7
+$$
+a_{i}(t)=\frac{\sigma_{i}^{2}(t) x_{i}^{2}}{\left(h_{i}+h_{i+1}\right) h_{i}}-\frac{r(t) x_{i}}{h_{i}+h_{i+1}}, \quad b_{i}(t)=-\frac{\sigma_{i}^{2}(t) x_{i}^{2}}{h_{i} h_{i+1}}-r(t)
+$$
+
+$$
+c_{i}(t)=\frac{\sigma_{i}^{2}(t) x_{i}^{2}}{\left(h_{i}+h_{i+1}\right) h_{i+1}}+\frac{r(t) x_{i}}{h_{i}+h_{i+1}} \quad \text { for } i=1, \ldots, N-1
+$$
+
+The vectors f(t) and $\pi_{\epsilon}(x-K)$ are the corresponding boundary and initial conditions:
+
+% 3.8
+$$
+\mathbf{f}(t)=\left(\begin{array}{c}
+a_{1} U_{0}(t) \\
+0 \\
+\vdots \\
+0 \\
+c_{N-1} U_{N}(t)
+\end{array}\right), \quad \pi_{\varepsilon}(\mathbf{x}-\mathbf{K})=\left(\begin{array}{c}
+\pi_{\varepsilon}\left(x_{1}-K\right) \\
+\pi_{\varepsilon}\left(x_{2}-K\right) \\
+\vdots \\
+\pi_{\varepsilon}\left(x_{N-1}-K\right)
+\end{array}\right)
+$$
+
+Solving the initial value problem and using a numerical integration rule for evaluating the quadrature gives:
+
+% 3.13
+$$
+\mathbf{U}(t+l) \approx e^{l \mathbf{A}(t)}\left[\mathbf{U}(t)+\int_{t}^{t+l} e^{-(s-t) \mathbf{A}(t)} \mathbf{f}(s) \mathrm{d} s\right] \\
+$$
+
+$$
+= e^{l \mathbf{A}(t)} \mathbf{U}(t)+\int_{t}^{t+l} e^{(t+l-s) \mathbf{A}(t)} \mathbf{f}(s) \mathrm{d} s \\
+$$
+
+$$
+\approx e^{l \mathbf{A}(t)} \mathbf{U}(t)+\int_{t}^{t+l} e^{(t+l-s) \mathbf{A}(t)}\left[l^{-1}(t+l-s) \mathbf{f}(t)+
+l^{-1}(s-t) \mathbf{f}(t+l)\right] \mathrm{d} s \\
+$$
+
+$$
+= e^{l \mathbf{A}(t)} \mathbf{U}(t)+(l \mathbf{A}(t))^{-1}\left[l e^{l \mathbf{A}(t)}+\mathbf{A}^{-1}(t)-\mathbf{A}^{-1}(t) e^{l \mathbf{A}(t)}\right] \mathbf{f}(t) \\
+$$
+
+$$
++(l \mathbf{A}(t))^{-1}\left[\mathbf{A}^{-1}(t) e^{l \mathbf{A}(t)}-l I-\mathbf{A}^{-1}(t)\right] \mathbf{f}(t+l), \quad t=0, l, 2 l, \ldots
+$$
+
+Now the problem is how to approximate $e^{lA(t)}$ to get numerical solution. The numerical method to be employed here is based on the use of the following second-order rational approximation:
+
+% 3.15
+$$
+e^{z} \approx \frac{1+(1-c) z}{1-c z+(c-1 / 2) z^{2}}
+$$
+
+The recursion becomes
+
+% 3.17
+$$
+U(t+l)=R(l \mathbf{A}(t)) U(t)+\frac{l}{2}[V(l \mathbf{A}(t)) \mathbf{f}(t)+W(l \mathbf{A}(t)) \mathbf{f}(t+l)]
+$$
+
+for t = 0, l, 2l, ..., M, where
+
+% 3.18
+$$
+V(l \mathbf{A}(t))=\left[I-c l \mathbf{A}(t)+\left(c-\frac{1}{2}\right) l^{2} \mathbf{A}^{2}(t)\right]^{-1}
+$$
+
+$$
+W(l \mathbf{A}(t))=\left[I-c l \mathbf{A}(t)+\left(c-\frac{1}{2}\right) l^{2} \mathbf{A}^{2}(t)\right]^{-1}\left[I-2\left(c-\frac{1}{2}\right) l \mathbf{A}(t)\right]
+$$
+
+It can be shown that the truncation error of the difference scheme with 1/2 \textless c \textless $2-\sqrt{2}$ is $O(h^2 + l^2)$.

@@ -1,0 +1,133 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[a4paper,
+            bindingoffset=0.2in,
+            left=0.9in,
+            right=0.9in,
+            footskip=.25in]{geometry}
+     
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=blue,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=blue
+}
+
+\usepackage{enumerate}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{amsthm,amssymb,mathrsfs,setspace}%amsmath, latexsym,footmisc
+\usepackage{amsmath}
+% \usepackage{pstcol}
+% \usepackage{play}
+\usepackage{epsfig}
+%\usepackage[grey,times]{quotchap}
+\usepackage[nottoc]{tocbibind}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+%
+
+\input xy
+\xyoption{all}
+
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{notation}[theorem]{Notation}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\renewcommand{\baselinestretch}{1.5}
+
+
+
+
+\begin{document}
+
+%\pagenumbering{arabic} \setcounter{page}{1}
+
+% --------------- Title page -----------------------
+
+\begin{titlepage}
+\enlargethispage{3cm}
+
+\begin{center}
+
+\vspace*{-2cm}
+
+\textbf{\Large Exponential Time Integration and Second-Order Difference Scheme for a Generalized Black-Scholes Equation}
+
+\vfill
+
+ A Project Report submitted \\
+for the Course \\[1cm]
+
+{\bf\Large\ MA473: Computational Finance }\\[.1in]
+
+ \vfill
+
+{\large \emph{by}}\\[5pt]
+
+{\large\bf {Shashank Goyal \qquad \, (180123042)}}\\[5pt]
+{\large\bf {Tejus Singla \qquad \quad \; \; (180123061)}}\\[5pt]
+{\large\bf {Jay Sabale \quad \qquad \; \; \; (180123019)}}\\[5pt]
+
+\vfill
+
+{\large \emph{under}}\\[5pt]
+{\large\bf Dr Natesan Srinivasan}\\[5pt]
+{\large\bf Professor}\\[5pt]
+{\large\bf Department of Mathematics}
+
+\vfill
+\includegraphics[height=3.5cm]{figures/iitglogo.eps}
+
+\vspace*{0.5cm}
+
+{\bf\large \mbox{INDIAN INSTITUTE OF TECHNOLOGY GUWAHATI}}\\[5pt]
+{\bf\large GUWAHATI - 781039, INDIA}\\[10pt]
+{\it\large November 2021}
+\end{center}
+
+\end{titlepage}
+
+\clearpage
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\listoffigures
+\listoftables
+
+
+\newpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% =========== Main chapters starts here. Type in separate files and include the filename here. ==
+% ============================
+
+\input chapter1.tex
+\input chapter2.tex
+
+
+
+\nocite{*}
+
+% \bibliographystyle{plain}
+% \bibliography{bib.bib}
+
+\end{document}
+
